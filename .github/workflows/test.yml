@@ -1,0 +1,51 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      COMPOSE_FILE: docker-compose.ci.yml
+#      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+#      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+    steps:
+      - uses: actions/checkout@v3
+
+        #If necessary
+#      - name: Login to DockerHub
+#        run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - name: Build docker images
+        run: docker compose build
+
+      - name: Run tests
+        run: docker compose run test
+
+  format:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: docker-compose.ci.yml
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build docker images
+        run: docker compose build
+
+      - name: Check formatting
+        run: docker compose run test bash -c 'find app/ src/ include/ tests/ -iname *.h -o -iname *.cpp | xargs clang-format -i --dry-run --Werror -style=file'
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: docker-compose.ci.yml
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build docker images
+        run: docker compose build
+
+      - name: Run linter
+        run: docker compose run test bash -c 'find app/ src/ include/ tests/ -iname *.cpp -o -iname *.h | xargs clang-tidy -p cmake-build-debug'

@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .docker/x64/Dockerfile
+      target: x64_dev
